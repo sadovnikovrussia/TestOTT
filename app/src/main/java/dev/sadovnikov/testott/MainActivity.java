@@ -13,7 +13,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ToursRvAdapter.RvToursListener,
+        ChoosePriceDialogFragment.ChoosePriceDialogFragmentListener {
     private static final String TAG = "MainActivity";
 
     RecyclerView rvTours;
@@ -25,12 +26,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rvTours = findViewById(R.id.rv_tours);
         rvTours.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-
         loadTours();
 //        loadFlights();
 //        loadHotels();
 //        loadCompanies();
     }
+
+    @Override
+    public void onTourClick(Tour tour) {
+        loadCompanies(tour);
+
+    }
+
 
     @SuppressLint("StaticFieldLeak")
     private void loadTours() {
@@ -43,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList<Hotel> hotels = httpClient.readHotelsInfo();
                     ArrayList<Flight> flights = httpClient.readFlightsInfo();
                     ArrayList <Company> companies = httpClient.readCompaniesInfo();
-                    ArrayList<Tour> tours = TourMaker.makeTours(hotels, flights);
+                    ArrayList<Tour> tours = TourMaker.makeTours(hotels, flights, companies);
                     Log.d(TAG, "doInBackground: tours = " + tours);
                     return tours;
                 } catch (IOException | JSONException e) {
@@ -55,10 +62,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(ArrayList<Tour> tours) {
                 super.onPostExecute(tours);
+                rvTours.setAdapter(new ToursRvAdapter(tours, MainActivity.this));
                 Log.d(TAG, "loadTours onPostExecute() returned: " + tours);
             }
         }.execute();
     }
+
 
     @SuppressLint("StaticFieldLeak")
     private void loadFlights() {
@@ -107,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    private void loadCompanies() {
+    private void loadCompanies(final Tour tour) {
         new AsyncTask<Void, Void, ArrayList<Company>>() {
             @Override
             protected ArrayList<Company> doInBackground(Void... voids) {
@@ -125,6 +134,12 @@ public class MainActivity extends AppCompatActivity {
             protected void onPostExecute(ArrayList<Company> companies) {
                 super.onPostExecute(companies);
                 Log.d(TAG, "loadCompanies onPostExecute() returned: " + companies);
+                ChoosePriceDialogFragment dialogFragment = new ChoosePriceDialogFragment();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("tour", tour);
+                bundle.putSerializable("companies", companies);
+                dialogFragment.setArguments(bundle);
+                dialogFragment.show(getSupportFragmentManager(), "tours");
             }
         }.execute();
     }

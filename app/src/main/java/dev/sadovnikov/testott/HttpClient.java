@@ -99,4 +99,31 @@ class HttpClient {
 
         return companies;
     }
+
+    ArrayList<Company> loadCompaniesById() throws IOException, JSONException {
+        Log.d(TAG, "readCompaniesInfo: ");
+        String requestHotelsUrl = "https://api.myjson.com/bins/8d024";
+
+        URL url = new URL(requestHotelsUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(GET);
+        connection.connect();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        InputStream inputStream;
+        BufferedReader bufferedReader;
+        inputStream = connection.getInputStream();
+        bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        String json = stringBuilder.toString();
+        ArrayList<Company> companies = jsonParser.getCompanies(json);
+        Log.d(TAG, "readCompaniesInfo() returned: " + companies);
+
+        return companies;
+    }
+
 }

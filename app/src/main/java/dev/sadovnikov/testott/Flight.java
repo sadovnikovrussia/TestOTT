@@ -2,9 +2,12 @@ package dev.sadovnikov.testott;
 
 import android.support.annotation.NonNull;
 
+import java.util.Objects;
+
 public class Flight {
     private long id;
     private long companyId;
+    private String companyName;
     private String departure;
     private String arrival;
     private long price;
@@ -37,6 +40,14 @@ public class Flight {
         return price;
     }
 
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -47,5 +58,23 @@ public class Flight {
                 ", arrival='" + arrival + '\'' +
                 ", price=" + price +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Flight)) return false;
+        Flight flight = (Flight) o;
+        return getId() == flight.getId() &&
+                getCompanyId() == flight.getCompanyId() &&
+                getPrice() == flight.getPrice() &&
+                Objects.equals(getDeparture(), flight.getDeparture()) &&
+                Objects.equals(getArrival(), flight.getArrival());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getId(), getCompanyId(), getDeparture(), getArrival(), getPrice());
     }
 }

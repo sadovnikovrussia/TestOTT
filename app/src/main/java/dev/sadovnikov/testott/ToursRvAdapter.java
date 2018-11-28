@@ -13,14 +13,12 @@ import java.util.ArrayList;
 public class ToursRvAdapter extends RecyclerView.Adapter<ToursRvAdapter.TourViewHolder> {
     private static final String TAG = "ToursRvAdapter";
 
-    ArrayList<Hotel> hotels;
-    ArrayList<Flight> flights;
-    ArrayList<Company> companies;
+    RvToursListener listener;
+    ArrayList<Tour> tours;
 
-    public ToursRvAdapter(ArrayList<Hotel> hotels, ArrayList<Flight> flights, ArrayList<Company> companies) {
-        this.hotels = hotels;
-        this.flights = flights;
-        this.companies = companies;
+    public ToursRvAdapter(ArrayList<Tour> tours, RvToursListener rvToursListener) {
+        this.tours = tours;
+        listener = rvToursListener;
     }
 
     @NonNull
@@ -32,14 +30,18 @@ public class ToursRvAdapter extends RecyclerView.Adapter<ToursRvAdapter.TourView
 
     @Override
     public void onBindViewHolder(@NonNull TourViewHolder tourViewHolder, int i) {
-        tourViewHolder.tvNameOfHotel.setText(hotels.get(i).getName());
-        tourViewHolder.tvNumberOfFlights.setText(hotels.get(i).getName());
-        tourViewHolder.tvNameOfHotel.setText(hotels.get(i).getName());
+        tourViewHolder.tvNameOfHotel.setText("Отель " + "\"" + tours.get(i).getHotel().getName() + "\"");
+        if (tours.get(i).getFlights().size() % 10 == 1){
+            tourViewHolder.tvNumberOfFlights.setText(String.valueOf(tours.get(i).getFlights().size() + " вариант перелета"));
+        } else {
+            tourViewHolder.tvNumberOfFlights.setText(String.valueOf(tours.get(i).getFlights().size() + " варианта перелета"));
+        }
+        tourViewHolder.tvPrice.setText("от " + String.valueOf(tours.get(i).getChosenPrice()) + " р");
     }
 
     @Override
     public int getItemCount() {
-        return hotels.size();
+        return tours.size();
     }
 
     public class TourViewHolder extends RecyclerView.ViewHolder {
@@ -50,14 +52,23 @@ public class ToursRvAdapter extends RecyclerView.Adapter<ToursRvAdapter.TourView
 
         public TourViewHolder(@NonNull View itemView) {
             super(itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Tour tour = tours.get(getLayoutPosition());
+                    listener.onTourClick(tour);
+                }
+            });
             cvTour = itemView.findViewById(R.id.cv_tour);
             tvNameOfHotel = itemView.findViewById(R.id.tv_hotel_name);
             tvNumberOfFlights = itemView.findViewById(R.id.tv_number_of_flights);
             tvPrice = itemView.findViewById(R.id.tv_price);
         }
 
-        void bind(){
+    }
 
-        }
+    interface RvToursListener {
+
+        void onTourClick(Tour tour);
     }
 }
