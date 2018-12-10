@@ -45,7 +45,7 @@ public class ChoosePriceDialogFragment extends DialogFragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Выбор авиакомпании");
-        builder.setSingleChoiceItems(adapter, tour.getIndexOfChosenFlight(), new DialogInterface.OnClickListener() {
+        builder.setSingleChoiceItems(sFlights, tour.getIndexOfChosenFlight(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d(TAG, "onClick: ");

@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.json.JSONException;
 
@@ -18,6 +20,12 @@ public class MainActivity extends AppCompatActivity implements ToursRvAdapter.Rv
     private static final String TAG = "MainActivity";
 
     RecyclerView rvTours;
+    ProgressBar progressBar;
+
+    ArrayList<Hotel> hotels;
+    ArrayList<Flight> flights;
+    ArrayList <Company> companies;
+    ArrayList<Tour> tours;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,32 +34,36 @@ public class MainActivity extends AppCompatActivity implements ToursRvAdapter.Rv
         setContentView(R.layout.activity_main);
         rvTours = findViewById(R.id.rv_tours);
         rvTours.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        progressBar = findViewById(R.id.progressBar);
         loadTours();
-//        loadFlights();
-//        loadHotels();
-//        loadCompanies();
     }
+
 
     @Override
     public void onTourClick(Tour tour) {
-        loadCompanies(tour);
+        Log.d(TAG, "loadCompanies onPostExecute() returned: " + companies);
+        ChoosePriceDialogFragment dialogFragment = new ChoosePriceDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("tour", tour);
+        bundle.putSerializable("companies", companies);
+        dialogFragment.setArguments(bundle);
+        dialogFragment.show(getSupportFragmentManager(), "tours");
 
     }
 
-
     @SuppressLint("StaticFieldLeak")
     private void loadTours() {
+        progressBar.setVisibility(View.VISIBLE);
         new AsyncTask<Void, Void, ArrayList<Tour>>() {
             @Override
             protected ArrayList<Tour> doInBackground(Void... voids) {
                 Log.d(TAG, "loadTour doInBackground: ");
                 HttpClient httpClient = new HttpClient();
                 try {
-                    ArrayList<Hotel> hotels = httpClient.readHotelsInfo();
-                    ArrayList<Flight> flights = httpClient.readFlightsInfo();
-                    ArrayList <Company> companies = httpClient.readCompaniesInfo();
-                    ArrayList<Tour> tours = TourMaker.makeTours(hotels, flights, companies);
-                    Log.d(TAG, "doInBackground: tours = " + tours);
+                    hotels = httpClient.readHotelsInfo();
+                    flights = httpClient.readFlightsInfo();
+                    companies = httpClient.readCompaniesInfo();
+                    tours = TourMaker.makeTours(hotels, flights, companies);
                     return tours;
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
@@ -62,87 +74,11 @@ public class MainActivity extends AppCompatActivity implements ToursRvAdapter.Rv
             @Override
             protected void onPostExecute(ArrayList<Tour> tours) {
                 super.onPostExecute(tours);
+                progressBar.setVisibility(View.GONE);
                 rvTours.setAdapter(new ToursRvAdapter(tours, MainActivity.this));
                 Log.d(TAG, "loadTours onPostExecute() returned: " + tours);
             }
         }.execute();
     }
-
-
-    @SuppressLint("StaticFieldLeak")
-    private void loadFlights() {
-        new AsyncTask<Void, Void, ArrayList<Flight>>() {
-            @Override
-            protected ArrayList<Flight> doInBackground(Void... voids) {
-                Log.d(TAG, "loadFlights doInBackground: ");
-                HttpClient httpClient = new HttpClient();
-                try {
-                    return httpClient.readFlightsInfo();
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(ArrayList<Flight> flights) {
-                super.onPostExecute(flights);
-                Log.d(TAG, "loadFlights onPostExecute() returned: " + flights);
-            }
-        }.execute();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private void loadHotels() {
-        new AsyncTask<Void, Void, ArrayList<Hotel>>() {
-            @Override
-            protected ArrayList<Hotel> doInBackground(Void... voids) {
-                Log.d(TAG, "loadHotels doInBackground: ");
-                HttpClient httpClient = new HttpClient();
-                try {
-                    return httpClient.readHotelsInfo();
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(ArrayList<Hotel> hotels) {
-                super.onPostExecute(hotels);
-                Log.d(TAG, "loadHotels onPostExecute() returned: " + hotels);
-            }
-        }.execute();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private void loadCompanies(final Tour tour) {
-        new AsyncTask<Void, Void, ArrayList<Company>>() {
-            @Override
-            protected ArrayList<Company> doInBackground(Void... voids) {
-                Log.d(TAG, "loadCompanies doInBackground: ");
-                HttpClient httpClient = new HttpClient();
-                try {
-                    return httpClient.readCompaniesInfo();
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(ArrayList<Company> companies) {
-                super.onPostExecute(companies);
-                Log.d(TAG, "loadCompanies onPostExecute() returned: " + companies);
-                ChoosePriceDialogFragment dialogFragment = new ChoosePriceDialogFragment();
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("tour", tour);
-                bundle.putSerializable("companies", companies);
-                dialogFragment.setArguments(bundle);
-                dialogFragment.show(getSupportFragmentManager(), "tours");
-            }
-        }.execute();
-    }
-
 
 }
